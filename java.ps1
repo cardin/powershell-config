@@ -49,6 +49,7 @@ IF ($java_paths.length -eq 0) {
 IF ($java_paths.length -gt 1) {
     Write-Host "More than 1 path found:"
     Write-Host `t$($java_paths -join "`n")`n
+    Write-Host "Using the first on the list."
 } 
 $java_path = $java_paths[0]
 Write-Host -NoNewline "Setting `$env to "
