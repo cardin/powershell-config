@@ -1,17 +1,17 @@
-﻿add_newline	= false
-scan_timeout = 10
+﻿scan_timeout = 10
 format = """$env_var\
     $username\
     $hostname\
     $directory\
-    $git_branch\
     $git_state\
     $nodejs\
     $java\
     $conda\
     $python\
-    $cmd_duration\
+    $container\
     $time\
+    $cmd_duration\
+    $memory_usage\
     $line_break\
     $character"""
 
@@ -21,26 +21,22 @@ format = "[](fg:red)[  root ]($style)[](fg:black bg:red)"
 style = "fg:white bg:red"
 
 [username]
-format = "[](fg:red)[  $user ]($style)[](fg:black bg:red)"
+format = "[](fg:yellow)[  $user ]($style)[](fg:black bg:yellow)"
 style_user = "fg:black bg:yellow"
-style_root = "fg:white bg:red"
+style_root = "fg:red bg:yellow"
 
 [hostname]
 format = "[](fg:green)[  $hostname ]($style)[](fg:black bg:green) "
 style = "fg:black bg:green"
 
 [directory]
-format = "[](fg:cyan)[  ](fg:bright-black bg:cyan)[](fg:cyan bg:green)[  $path ]($style)[$read_only]($read_only_style)[](green)"
-truncation_length = 4
+format = "[](fg:45)[ ](fg:bright-black bg:45)[](fg:45 bg:green)[  $path ]($style)[$read_only]($read_only_style)[](green)"
+truncation_length = 2
 truncation_symbol = " "
 truncate_to_repo = false
 style = "fg:bright-black bg:green"
-read_only = " "
+read_only = " "
 read_only_style = "fg:bright-red bg:green"
-
-[git_branch]
-format = "[](fg:black bg:purple)[ $symbol$branch ]($style)[](fg:purple)"
-style = "fg:black bg:purple"
 
 [git_state]
 format = "[](fg:black bg:purple)[ \\($state( $progress_current/$progress_total)\\) ]($style)[](fg:purple)"
@@ -49,35 +45,44 @@ style = "fg:black bg:purple"
 [nodejs]
 symbol = " "
 format = "[](fg:black bg:green)[ $symbol$version ]($style)[](fg:green)"
+version_format = "${major}"
 style = "fg:black bg:green"
 
 [java]
 symbol = " "
 format = "[](fg:black bg:red)[ $symbol$version ]($style)[](fg:red)"
+version_format = "${major}"
 style = "fg:black bg:red"
 
 [conda]
-symbol = " "
+symbol = " "
 format = "[](fg:black bg:blue)[ $symbol$environment ]($style)[](fg:blue)"
 truncation_length = 0
 ignore_base = false
 style = "fg:black bg:blue"
 
 [python]
-symbol = " "
+symbol = " "
 format = "[](fg:black bg:yellow)[ ${symbol}${pyenv_prefix}${version}( \\($virtualenv\\)) ]($style)[](fg:yellow)"
+version_format = "${major}"
 style = "fg:black bg:yellow"
 
-[cmd_duration]
-format = "[](fg:black bg:yellow)[  $duration ]($style)"
-min_time = 0
-style = "fg:bright-black bg:yellow"
-
 [time]
-format = "[](fg:yellow bg:white)[  $time ]($style)[](fg:white)"
+format = "[](fg:black bg:yellow)[  $time ]($style)[](fg:yellow)"
 time_format = "%R"
 disabled = false
+style = "fg:bright-black bg:yellow"
+
+[cmd_duration]
+format = "[](fg:black bg:white)[  $duration ]($style)[](fg:white bg:black)[](fg:black bg:black)"
+min_time = 500
 style = "fg:bright-black bg:white"
+
+[memory_usage]
+symbol = ""
+format = "[](fg:black bg:bright-red)[ ${symbol} ${ram} \\(${swap}\\) ]($style)[](fg:bright-red bg:black)"
+style = "fg:white bg:bright-red"
+disabled = false
 
 [character]
 success_symbol = "[ ](green)"

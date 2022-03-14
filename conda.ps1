@@ -1,37 +1,37 @@
 PARAM (
-    [int] $version,
-    [string] $provider
+    [parameter(Mandatory=$false)][int] $choiceNum
 )
 
-function Get-Provider ($provider) {
-    IF ($provider -like "mini") {
-        RETURN "Miniconda"
-    } ELSE {
-        RETURN "Anaconda"
+. "$PSScriptRoot\scripts\find-exe.ps1"
+
+$exeLocs = @(
+    "Miniconda*",
+    "Anaconda*",
+    "ProgramData/Miniconda*",
+    "ProgramData/Anaconda*"
+)
+function Find-AllConda() {
+    return Find-Defaults $exeLocs
+}
+
+function Show-Help() {
+    Write-Host "Usage: activate-conda [choiceNum]`n"
+    Write-Host -NoNewline "Example: "
+    Write-Host -ForegroundColor Magenta "activate-conda 1`n"
+    Write-Host "Available:"
+    $results = Find-AllConda
+    if ($results.Length -gt 0) {
+        $results | % {$i = 0} {
+           Write-Host "`t$($i):`t $_"
+           $i++
+       }
+       Write-Host "`n"
+    } else {
+        Write-Host "-"
     }
 }
 
-function Get-All-Conda () {
-    RETURN Get-ChildItem "${env:USERPROFILE}/Miniconda*", "${env:USERPROFILE}/Anaconda*", `
-            "C:/ProgramData/Miniconda*", "D:/ProgramData/Miniconda*", `
-            "C:/ProgramData/Anaconda*", "D:/ProgramData/Anaconda*", `
-            "C:/Miniconda*", "D:/Miniconda*", `
-            "C:/Anaconda*", "D:/Anaconda*" `
-            | % { $_.FullName }
-}
-
-function Get-Conda ($version, $provider) {
-    $conda_paths = Get-All-Conda
-
-    # Match by provider
-    $provider_paths = @($conda_paths) -match $provider_dir #case insensitive
-
-    # Match by version
-    $version_paths = @($provider_paths) -match "conda$($version)"
-    RETURN $version_paths
-}
-
-function activate($loc) {
+function Activate($loc) {
     #region conda initialize
     # !! Contents within this block are managed by 'conda init' !!
     (& "$loc" "shell.powershell" "hook") | Out-String | Invoke-Expression
@@ -41,30 +41,25 @@ function activate($loc) {
     Write-Host -ForegroundColor Magenta $loc`n
 }
 
-IF (!$PSBoundParameters.ContainsKey('version')) {
-    Write-Host "Usage: activate-conda <2|3> [mini]`n"
-    Write-Host -NoNewline "Example: "
-    Write-Host -ForegroundColor Magenta "activate-conda 3 mini`n"
-    Write-Host "Available:"
-    Write-Host `t$($(Get-All-Conda) -join "`n`t")`n
+## =========== START ===========
+
+IF (!$PSBoundParameters.ContainsKey('choiceNum')) {
+    Show-Help
     RETURN
 }
 
-$provider_dir = Get-Provider $provider
-$conda_paths = @(Get-Conda $version $provider_dir)
-
-IF ($conda_paths.length -eq 0) {
-    Write-Host -ForegroundColor Red "[ERROR] $provider_dir $version not found!`n"
+$all_paths = Find-AllConda
+IF ($choiceNum -ge $all_paths.length) {
+    Write-Host -ForegroundColor Red "[ERROR] Given choice $choiceNum is out of range!`n"
     RETURN
-} 
+}
 
-IF ($conda_paths.length -gt 1) {
-    Write-Host "More than 1 path found:"
-    Write-Host `t$($conda_paths -join "`n")`n
-    Write-Host "Using the first on the list."
-} 
-$conda_path = $conda_paths[0]
-activate "$conda_path\Scripts\conda.exe"
+$conda_path = Join-Path $all_paths[$choiceNum] -ChildPath "\Scripts\conda.exe"
+if (-Not $(Test-Path $conda_path)) {
+    Write-Host -ForegroundColor Red "[ERROR] $conda_path not found!`n"
+    RETURN
+}
+Activate "$conda_path"
 activate-starship
 
 RETURN
